@@ -1,0 +1,10 @@
+[meta]
+name = "Ugly Base Hider"
+author = "XertroV"
+category = "Vanity"
+version = "1.0.0"
+siteid = 775
+
+[script]
+defines = [ "RELEASE" ]
+
