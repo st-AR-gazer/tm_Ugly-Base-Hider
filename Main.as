@@ -4,9 +4,13 @@ const string MenuIconColor = "\\$" + PluginNameHash.SubStr(0, 3); // TODO: repla
 const string PluginIcon = GetRandomIcon(PluginNameHash); // TODO: replace with a specific icon, e.g., Icons::Bath
 const string MenuTitle = MenuIconColor + PluginIcon + "\\$z " + PluginName;
 
+[Setting category="NoStadium Base Hider" name="Enabled (hide NoStadium base)"]
+bool S_Enabled = true;
+
 void Main() {
     WaitForNoMapLoaded();
-    HideNoStadiumBase();
+    PrimeSavedMeshesOnce();
+    if (S_Enabled) HideNoStadiumBase();
 }
 
 void OnDestroyed() {
@@ -37,6 +41,10 @@ void HideNoStadiumBase() {
 }
 
 void ShowNoStadiumBase() {
+    if (!HasSavedMeshes()) {
+        dev_trace("No saved NoStadium meshes to restore; skipping restore.");
+        return;
+    }
     RestoreMesh(0);
     RestoreMesh(1);
     RestoreMesh(2);
@@ -47,6 +55,22 @@ const string NoStadiumBasePath = "GameData\\Stadium256\\Media\\Prefab\\Warp\\";
 const string[] NoStadiumPrefabs = {"Border", "Corner", "Center"};
 CSystemFidFile@[] NoStadiumPrefabFids = {null, null, null};
 CPlugSolid2Model@[] NoStadiumMeshes = {null, null, null};
+
+bool g_Primed = false;
+void PrimeSavedMeshesOnce() {
+    if (g_Primed) return;
+    for (int i = 0; i < 3; i++) {
+        if (NoStadiumMeshes[i] is null) {
+            auto model = GetModelFromPrefab(i);
+            if (model !is null && model.Mesh !is null) {
+                @NoStadiumMeshes[i] = model.Mesh;
+                NoStadiumMeshes[i].MwAddRef();
+                GetPrefab(i).MwAddRef();
+            }
+        }
+    }
+    g_Primed = true;
+}
 
 void NullifyMesh(int index) {
     if (IsMeshNull(index)) return;
@@ -127,7 +151,34 @@ CSystemFidFile@ GetPrefabFid(int index) {
     return NoStadiumPrefabFids[index];
 }
 
+bool HasSavedMeshes() {
+    return NoStadiumMeshes[0] !is null || NoStadiumMeshes[1] !is null || NoStadiumMeshes[2] !is null;
+}
+bool IsAllMeshesNull() {
+    return IsMeshNull(0) && IsMeshNull(1) && IsMeshNull(2);
+}
 
+void ApplyFromSetting() {
+    if (IsMapCurrentlyLoaded()) {
+        NotifyWarning("Change queued: will apply after you leave the current map.");
+    }
+    WaitForNoMapLoaded();
+    PrimeSavedMeshesOnce();
+
+    const bool currentlyHidden = IsAllMeshesNull();
+    if (S_Enabled) {
+        if (!currentlyHidden) HideNoStadiumBase();
+    } else {
+        if (currentlyHidden && HasSavedMeshes()) ShowNoStadiumBase();
+    }
+}
+
+void RenderMenu() {
+    if (UI::MenuItem("Enabled (hide NoStadium base)", "", S_Enabled)) {
+        S_Enabled = !S_Enabled;
+        startnew(ApplyFromSetting);
+    }
+}
 
 
 uint16 GetOffset(const string &in className, const string &in memberName) {

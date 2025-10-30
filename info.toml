@@ -1,8 +1,8 @@
 [meta]
 name = "Ugly Base Hider"
-author = "XertroV"
-category = "Vanity"
-version = "1.0.0"
+author = "XertroV / ar"
+category = "Map Editor"
+version = "0.1.1"
 siteid = 775
 
 [script]

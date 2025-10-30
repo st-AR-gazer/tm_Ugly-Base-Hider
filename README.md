@@ -1,15 +1,15 @@
-# ugly base hider
+## ugly base hider
 
 hides the ugly brick texture (visual only) for NoStadium bases.
+
+>>> can now also be enabled / disabled from the RenderMenu menu
 
 -----
 
 License: Public Domain
 
-Authors: XertroV
+Authors: XertroV (and a bit of ar too xdd)
 
 Suggestions/feedback: @XertroV on Openplanet discord
-
-Code/issues: [https://github.com/XertroV/tm-ugly-base-hider](https://github.com/XertroV/tm-ugly-base-hider)
 
 GL HF
